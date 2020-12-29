@@ -43,10 +43,14 @@ public class FileStorageService {
                 throw new FileStorageException("Sorry! Filename contains invalid path sequence " + fileName);
             }
 
-            // Copy file to the target location (Replacing existing file with the same name)
+            // Copy file to the target location (Throw exception if the file with the same name exists,
+            // since REPLACE_EXISTING will make the original file not able to delete or read.)
             Path targetLocation = this.fileStorageLocation.resolve(fileName);
-            Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
-
+            if (Files.notExists(targetLocation)) {
+                Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
+            } else {
+                throw new FileStorageException("Sorry! Filename " + fileName + " has already existed. Please try another name.");
+            }
             return fileName;
         } catch (IOException ex) {
             throw new FileStorageException("Could not store file " + fileName + ". Please try again!", ex);
